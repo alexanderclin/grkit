@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useRef, useState } from 'react';
 import { CAMERAS, MODESET_TOKEN, type Camera } from './cameras';
-import { loadCatalog, siteUrl } from './catalog';
+import { loadCatalog, MAX_EFFECTS, siteUrl } from './catalog';
+import { CustomLuts, type CustomLutEntry } from './components/CustomLuts';
 import { EffectsSection } from './components/EffectsSection';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RichText } from './components/RichText';
@@ -30,6 +31,7 @@ export function App() {
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const [cameraKey, setCameraKey] = useState(CAMERAS[0]!.key);
   const [selection, setSelection] = useState<ReadonlySet<string>>(() => new Set(DEFAULT_SELECTION));
+  const [customLuts, setCustomLuts] = useState<CustomLutEntry[]>([]);
   const [enabled, setEnabled] = useState<ReadonlySet<ModuleKey>>(ALL_MODULES);
   const [build, setBuild] = useState<Build>({ state: 'idle' });
   // A newer build or a changed selection makes the result of an older build stale.
@@ -39,8 +41,8 @@ export function App() {
   const camera = CAMERAS.find((item) => item.key === cameraKey) ?? CAMERAS[0]!;
   const support = camera.support;
   const available = support?.modules ?? [];
-  const plan = planModules(enabled, selection.size, available, support?.excluded);
-  const effectCount = plan.includeEffects ? selection.size : 0;
+  const plan = planModules(enabled, selection.size + customLuts.length, available, support?.excluded);
+  const effectCount = plan.includeEffects ? selection.size + customLuts.length : 0;
 
   function prefetch() {
     if (support) prefetchPackage(support.target, camera.id, language);
@@ -87,6 +89,11 @@ export function App() {
     resetBuild();
   }
 
+  function changeCustomLuts(next: CustomLutEntry[]) {
+    setCustomLuts(next);
+    resetBuild();
+  }
+
   function toggleModule(key: ModuleKey) {
     const next = new Set(enabled);
     if (!next.delete(key)) {
@@ -126,6 +133,7 @@ export function App() {
         effects,
         plan.omitted,
         language,
+        plan.includeEffects ? customLuts : [],
         (received) => {
           if (run === buildRun.current) setBuild({ state: 'building', received });
         },
@@ -243,7 +251,7 @@ export function App() {
                     </span>
                     {module.key === 'imageControl' &&
                       enabled.has('imageControl') &&
-                      selection.size === 0 && (
+                      selection.size + customLuts.length === 0 && (
                         <span className="module-warning">{t.imageControlEmpty}</span>
                       )}
                   </span>
@@ -265,8 +273,21 @@ export function App() {
                   language={language}
                   selection={selection}
                   onSelectionChange={changeSelection}
+                  reserved={customLuts.length}
                 />
               </Suspense>
+              {support && (
+                <div className="section-body">
+                  <CustomLuts
+                    strings={t}
+                    target={support.target}
+                    takenIds={selection}
+                    room={MAX_EFFECTS - selection.size}
+                    luts={customLuts}
+                    onChange={changeCustomLuts}
+                  />
+                </div>
+              )}
             </ErrorBoundary>
           ) : (
             <p className="status section-body">{t.effectsOff}</p>

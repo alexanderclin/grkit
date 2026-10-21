@@ -196,3 +196,59 @@ fn duplicate_invalid_and_excess_effects_are_rejected() {
     assert!(error(full.add_effect(&effect("test-extra"))).contains("at most 20 effects"));
     assert!(full.build().is_ok());
 }
+
+/// The smallest valid `.cube`: the identity transform at two points per axis.
+const IDENTITY_CUBE: &[u8] = b"TITLE \"Identity\"\nLUT_3D_SIZE 2\n\
+    0 0 0\n1 0 0\n0 1 0\n1 1 0\n0 0 1\n1 0 1\n0 1 1\n1 1 1\n";
+
+#[test]
+fn imports_a_custom_lut_and_builds_it_into_the_package() {
+    let files = runtime_files();
+    let mut builder = builder_with_runtime(&files);
+    let fit = builder
+        .import_lut(IDENTITY_CUBE, "identity.cube", "my-lut", "My LUT", "MY", "film", "srgb")
+        .unwrap();
+    assert_eq!(fit.id, "my-lut");
+    assert!(fit.mean_de.is_finite() && fit.max_de >= fit.mean_de);
+    assert!(builder
+        .import_lut(IDENTITY_CUBE, "identity.cube", "my-lut", "My LUT", "MY", "film", "srgb")
+        .is_err());
+
+    let package = builder.build().unwrap();
+    let verified: Value = packaging::verify_package(&package).unwrap();
+    assert_eq!(verified["effect_ids"], json!(["my-lut"]));
+
+    builder.remove_effect("my-lut").unwrap();
+    assert!(builder.remove_effect("my-lut").is_err());
+    let package = builder.build().unwrap();
+    let verified: Value = packaging::verify_package(&package).unwrap();
+    assert_eq!(verified["effect_ids"], json!([]));
+}
+
+#[test]
+fn import_lut_rejects_bad_input() {
+    let files = runtime_files();
+    let mut builder = builder_with_runtime(&files);
+    assert!(builder
+        .import_lut(b"not a cube", "bad.cube", "bad-lut", "Bad", "BAD", "film", "srgb")
+        .is_err());
+    assert!(builder
+        .import_lut(IDENTITY_CUBE, "identity.cube", "Bad ID!", "Bad", "BAD", "film", "srgb")
+        .is_err());
+    assert!(builder
+        .import_lut(IDENTITY_CUBE, "identity.cube", "ok-lut", "Ok", "OK", "film", "hdr")
+        .is_err());
+}
+
+#[test]
+fn import_lut_rejects_an_unsupported_target() {
+    let files = runtime_files();
+    let value = json!({"profile": "production", "target": "gr9-9.99", "startup_activation": "Off",
+        "files": files.iter().map(|(path, bytes)| json!({"path": path, "size": bytes.len(),
+            "sha256": packaging::sha256(bytes)})).collect::<Vec<_>>()});
+    let mut builder = Builder::new(&packaging::json_bytes(&value).unwrap()).unwrap();
+    let error = builder
+        .import_lut(IDENTITY_CUBE, "identity.cube", "my-lut", "My LUT", "MY", "film", "srgb")
+        .unwrap_err();
+    assert!(format!("{error:#}").contains("gr9-9.99"), "{error:#}");
+}

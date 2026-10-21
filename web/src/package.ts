@@ -129,10 +129,58 @@ async function sha256(bytes: Uint8Array): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** One user-supplied LUT that the build fits into the package as a custom effect. */
+export interface CustomLut {
+  /** The `.cube` file bytes. */
+  bytes: Uint8Array;
+  /** The file name, recorded in the effect's attribution. */
+  source: string;
+  id: string;
+  name: string;
+  /** The ADJ icon text: one to four characters. */
+  label: string;
+  /** The icon shape: `film`, `plain`, or `filter`. */
+  shape: string;
+  /** The encoding the LUT expects: `srgb`, `linear`, or `vlog`. */
+  input: string;
+}
+
+/** The fit scores that `Package.importLut` reports for one LUT. */
+export interface LutFitScore {
+  mean_de: number;
+  max_de: number;
+  standard_mean_de: number;
+}
+
+/**
+ * Fits one custom LUT against the target's runtime, without building a package,
+ * so the page can show the fit score before Download. Throws when the LUT
+ * cannot be fitted for this target.
+ */
+export async function fitCustomLut(target: string, lut: CustomLut): Promise<LutFitScore> {
+  const [{ Package }, build] = await Promise.all([loadWasm(), transfer(buildUrl(target)).bytes]);
+  const builder = new Package(build);
+  try {
+    const json = builder.importLut(
+      lut.bytes,
+      lut.source,
+      lut.id,
+      lut.name,
+      lut.label,
+      lut.shape,
+      lut.input,
+    );
+    return JSON.parse(json) as LutFitScore;
+  } finally {
+    builder.free();
+  }
+}
+
 /**
  * Builds GRKit.zip in the browser from the target's published runtime and the selected effects.
  * `camera` selects the ModeSet file. `omitted` names the plugins that the package does not install.
  * `language` selects the installation guide, which the site publishes as `guides/<camera>/<language>.pdf`.
+ * `customLuts` are fitted in the browser and added as effects alongside the selected ones.
  * grkit-wasm checks each runtime file against `build.json` and each effect's format.
  * `onProgress` receives the number of bytes of the files of this package that have arrived.
  */
@@ -142,6 +190,7 @@ export async function buildPackage(
   effects: readonly Effect[],
   omitted: readonly string[],
   language: string,
+  customLuts: readonly CustomLut[],
   onProgress: (received: number) => void,
 ): Promise<Blob> {
   const used = new Set<string>([wasmUrl]);
@@ -188,6 +237,9 @@ export async function buildPackage(
           throw new Error(`Effect checksum mismatch: ${effect.id}`);
         }
         builder.addEffect(blob);
+      }
+      for (const lut of customLuts) {
+        builder.importLut(lut.bytes, lut.source, lut.id, lut.name, lut.label, lut.shape, lut.input);
       }
       for (const name of omitted) {
         builder.omitPlugin(name);

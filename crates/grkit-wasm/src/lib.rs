@@ -4,18 +4,47 @@
 //! The page fetches those files and the selected effects, then builds the ZIP locally.
 //! `Builder` holds the logic so that native tests cover it. `Package` only adapts it for JS.
 
+mod gamma;
+
 use anyhow::{ensure, Context, Result};
 use grkit_core::{
     camera::{self, Camera},
-    effects,
+    effects, fit,
     modules::Selection,
     packaging, runtime, Files,
 };
 use wasm_bindgen::prelude::*;
 
+/// The largest `.cube` file `import_lut` accepts. A 65-point cube is about
+/// 10 MB of text; the bound keeps a stray file from exhausting the tab.
+const MAX_CUBE_BYTES: usize = 64 * 1024 * 1024;
+
+/// The outcome of fitting one uploaded LUT: its effect ID and the fit's
+/// CIEDE2000 errors on the ColorChecker, as the CLI import reports them.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LutFit {
+    pub id: String,
+    pub mean_de: f64,
+    pub max_de: f64,
+    pub standard_mean_de: f64,
+}
+
+impl LutFit {
+    fn to_json(&self) -> String {
+        serde_json::json!({
+            "id": self.id,
+            "mean_de": self.mean_de,
+            "max_de": self.max_de,
+            "standard_mean_de": self.standard_mean_de,
+        })
+        .to_string()
+    }
+}
+
 /// Collects one runtime build and a set of compiled effects, then assembles the package.
 pub struct Builder {
     manifest: Vec<u8>,
+    target: String,
     paths: Vec<String>,
     runtime: Files,
     effects: Files,
@@ -29,6 +58,7 @@ impl Builder {
     /// Starts a package from the runtime's `build.json`.
     pub fn new(manifest: &[u8]) -> Result<Self> {
         let parsed = packaging::read_manifest(manifest)?;
+        let target = parsed["target"].as_str().unwrap_or_default().to_owned();
         let paths = parsed["files"]
             .as_array()
             .context("Expected a manifest file list")?
@@ -42,6 +72,7 @@ impl Builder {
             .collect::<Result<_>>()?;
         Ok(Self {
             manifest: manifest.to_vec(),
+            target,
             paths,
             runtime: Files::new(),
             effects: Files::new(),
@@ -90,6 +121,66 @@ impl Builder {
         );
         self.effects.insert(name, blob.to_vec());
         Ok(id)
+    }
+
+    /// Fits one uploaded `.cube` LUT into a custom effect and adds it, the way
+    /// `grkit effects import` does on the command line. `input` names the
+    /// encoding the LUT expects: `srgb` (the usual case), `linear`, or `vlog`.
+    /// `source` is the file name, recorded in the effect's attribution.
+    /// The fit works against the Standard base gamma of the runtime's target,
+    /// which ships with the packager (see `gamma`); other targets are refused.
+    pub fn import_lut(
+        &mut self,
+        cube: &[u8],
+        source: &str,
+        id: &str,
+        name: &str,
+        label: &str,
+        shape: &str,
+        input: &str,
+    ) -> Result<LutFit> {
+        ensure!(
+            cube.len() <= MAX_CUBE_BYTES,
+            "LUT file is too large: {} bytes (limit {MAX_CUBE_BYTES})",
+            cube.len()
+        );
+        ensure!(
+            gamma::lut_target_supported(&self.target),
+            "Custom LUTs are not available for the {} runtime yet",
+            if self.target.is_empty() { "unknown" } else { &self.target }
+        );
+        ensure!(effects::valid_id(id), "Invalid effect ID: {id}");
+        let request = fit::Import {
+            effect_id: id,
+            name,
+            label,
+            shape,
+            source,
+            input: input.parse()?,
+            exposure: 0.0,
+            options: fit::Options::default(),
+        };
+        let (fitted, text) = fit::import(cube, &gamma::STANDARD_BASE_GAMMA, &request)?;
+        let definition = effects::parse_json(text.as_bytes())?;
+        let blob = effects::compile_definition(&definition)?;
+        let added = self.add_effect(&blob)?;
+        ensure!(added == id, "Imported effect ID mismatch: {added} != {id}");
+        Ok(LutFit {
+            id: added,
+            mean_de: fitted.mean_de,
+            max_de: fitted.max_de,
+            standard_mean_de: fitted.standard_mean_de,
+        })
+    }
+
+    /// Removes one effect that `add_effect` or `import_lut` added.
+    pub fn remove_effect(&mut self, id: &str) -> Result<()> {
+        let name = effects::filename(id)?;
+        ensure!(
+            self.effects.remove(&name).is_some(),
+            "No such effect in this package: {id}"
+        );
+        Ok(())
     }
 
     /// Leaves one plugin out of the package: `image-control`, `framing`, `guides`,
@@ -172,6 +263,32 @@ impl Package {
     #[wasm_bindgen(js_name = addEffect)]
     pub fn add_effect(&mut self, blob: &[u8]) -> Result<String, JsError> {
         self.0.add_effect(blob).map_err(js_error)
+    }
+
+    /// Fits one uploaded `.cube` LUT into a custom effect and adds it.
+    /// Returns a JSON object: the effect `id` and the fit's `mean_de`,
+    /// `max_de`, and `standard_mean_de` color errors.
+    #[wasm_bindgen(js_name = importLut)]
+    pub fn import_lut(
+        &mut self,
+        cube: &[u8],
+        source: &str,
+        id: &str,
+        name: &str,
+        label: &str,
+        shape: &str,
+        input: &str,
+    ) -> Result<String, JsError> {
+        self.0
+            .import_lut(cube, source, id, name, label, shape, input)
+            .map(|fit| fit.to_json())
+            .map_err(js_error)
+    }
+
+    /// Removes one effect that `addEffect` or `importLut` added.
+    #[wasm_bindgen(js_name = removeEffect)]
+    pub fn remove_effect(&mut self, id: &str) -> Result<(), JsError> {
+        self.0.remove_effect(id).map_err(js_error)
     }
 
     /// Leaves one plugin out of the package: `image-control`, `framing`, `guides`,

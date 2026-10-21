@@ -31,9 +31,12 @@ interface Props {
   language: Language;
   selection: ReadonlySet<string>;
   onSelectionChange: (selection: ReadonlySet<string>) => void;
+  /** Package slots that custom LUTs already take; the catalog selection shrinks by this many. */
+  reserved?: number;
 }
 
-export function EffectsSection({ strings: t, selection, onSelectionChange }: Props) {
+export function EffectsSection({ strings: t, selection, onSelectionChange, reserved = 0 }: Props) {
+  const limit = MAX_EFFECTS - reserved;
   const catalog = use(loadCatalog(PREVIEW_TARGET));
   const effects = catalog.effects;
   const [previewId, setPreviewId] = useState(DEFAULT_PREVIEW);
@@ -61,7 +64,7 @@ export function EffectsSection({ strings: t, selection, onSelectionChange }: Pro
     const next = new Set(selection);
     if (next.has(effect.id)) {
       next.delete(effect.id);
-    } else if (next.size < MAX_EFFECTS) {
+    } else if (next.size < limit) {
       next.add(effect.id);
     }
     onSelectionChange(next);
@@ -210,16 +213,16 @@ export function EffectsSection({ strings: t, selection, onSelectionChange }: Pro
 
       <div className="toolbar">
         <p>
-          {t.count(MAX_EFFECTS)[0]}
+          {t.count(limit)[0]}
           <span className="count">{selection.size}</span>
-          {t.count(MAX_EFFECTS)[1]}
+          {t.count(limit)[1]}
         </p>
         <div>
           <button
             type="button"
             className="button"
             onClick={() =>
-              onSelectionChange(new Set(effects.slice(0, MAX_EFFECTS).map((effect) => effect.id)))
+              onSelectionChange(new Set(effects.slice(0, limit).map((effect) => effect.id)))
             }
           >
             {t.selectAll}
@@ -256,7 +259,7 @@ export function EffectsSection({ strings: t, selection, onSelectionChange }: Pro
                     id={`effect-${effect.id}`}
                     type="checkbox"
                     checked={selection.has(effect.id)}
-                    disabled={!selection.has(effect.id) && selection.size >= MAX_EFFECTS}
+                    disabled={!selection.has(effect.id) && selection.size >= limit}
                     onChange={() => toggle(effect)}
                   />
                 </td>
