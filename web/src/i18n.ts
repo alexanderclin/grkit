@@ -34,6 +34,7 @@ const en = {
     guides: 'Guides',
     dateStamp: 'Date Imprint',
     grain: 'Grain',
+    diffusion: 'Diffusion',
   },
   package: 'Package',
   install: 'Install',
@@ -91,6 +92,7 @@ const en = {
     guides: 'Thirds, center, golden ratio, or diagonals inside the Framing area.',
     dateStamp: 'A date at the bottom right of photos, with classic, GR1s dot-matrix, or GR II digits: orange on color photos, white on black-and-white photos.',
     grain: "Film grain from the camera's grain stage, in three strengths. Photos only.",
+    diffusion: 'A soft diffusion glow over the highlights, in three strengths. Photos only.', 
   },
   framingXpanOnly: 'XPan 65:24 photos. The viewfinder stays 3:2 and dims the rest.',
   steps: [
@@ -157,6 +159,7 @@ const zhHans: Strings = {
     guides: '辅助线',
     dateStamp: '加印日期摄影',
     grain: '颗粒感',
+    diffusion: '柔光',
   },
   package: '安装包',
   install: '安装',
@@ -213,6 +216,7 @@ const zhHans: Strings = {
     guides: '在画幅内显示三分法、中心、黄金分割或对角线。',
     dateStamp: '在照片右下角加印日期，字体可选经典、GR1s 点阵或 GR II：彩色照片为橙色，黑白照片为白色。',
     grain: '相机内置的颗粒感，分弱、中、强三档。仅用于照片。',
+    diffusion: '为高光加上柔和的漫射辉光，分弱、中、强三档。仅用于照片。',
   },
   framingXpanOnly: '拍摄 XPan 65:24 照片。显示屏仍为 3:2，画幅外的区域变暗。',
   steps: [
@@ -271,6 +275,7 @@ const zhHant: Strings = {
     guides: '輔助線',
     dateStamp: '加印日期攝像',
     grain: '粒紋感',
+    diffusion: '柔光',
   },
   package: '安裝包',
   install: '安裝',
@@ -327,6 +332,7 @@ const zhHant: Strings = {
     guides: '在畫幅內顯示三分法、中心、黃金分割或對角線。',
     dateStamp: '在照片右下角加印日期，字體可選經典、GR1s 點陣或 GR II：彩色照片為橙色，黑白照片為白色。',
     grain: '相機內建的粒紋感，分弱、中、強三檔。僅用於照片。',
+    diffusion: '為高光加上柔和的漫射輝光，分弱、中、強三檔。僅用於照片。',
   },
   framingXpanOnly: '拍攝 XPan 65:24 照片。顯示屏仍為 3:2，畫幅外的區域變暗。',
   steps: [
@@ -385,6 +391,7 @@ const ja: Strings = {
     guides: 'グリッド',
     dateStamp: '日付入れ撮影',
     grain: '粒状感',
+    diffusion: 'ディフュージョン',
   },
   package: 'パッケージ',
   install: 'インストール',
@@ -442,6 +449,7 @@ const ja: Strings = {
     guides: 'フレーミングの範囲内に、9 分割、画面中央、黄金比、対角線のいずれかを表示します。',
     dateStamp: '写真の右下に日付を入れます。書体はクラシック、GR1s のドットマトリクス、GR II から選べます。カラー写真ではオレンジ色、白黒写真では白になります。',
     grain: 'カメラ内蔵の粒状感を、弱・中・強の 3 段階で加えます。静止画のみ。',
+    diffusion: 'ハイライトに柔らかな拡散グローを、弱・中・強の 3 段階で加えます。静止画のみ。',
   },
   framingXpanOnly: 'XPan 65:24 の写真を撮影します。撮影画面は 3:2 のままで、範囲外が暗くなります。',
   steps: [

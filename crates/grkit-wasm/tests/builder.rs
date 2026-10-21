@@ -74,11 +74,12 @@ fn omitted_plugins_are_written_and_checked() {
     let package = builder.build().unwrap();
     assert_eq!(
         packaging::verify_package(&package).unwrap()["plugins"],
-        json!(["image-control", "date-stamp", "grain"])
+        json!(["image-control", "date-stamp", "grain", "diffusion"])
     );
     // Without effects, omitting every other plugin leaves nothing to show.
     builder.omit_plugin("date-stamp").unwrap();
     builder.build().unwrap();
+    builder.omit_plugin("diffusion").unwrap();
     builder.omit_plugin("grain").unwrap();
     assert!(error(builder.build()).contains("shows no plugin"));
     builder.add_effect(&effect("test-a")).unwrap();

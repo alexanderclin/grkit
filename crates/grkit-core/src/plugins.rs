@@ -169,7 +169,7 @@ fn no_artwork() -> Vec<Vec<u8>> {
 
 /// The plugins in menu order. Plugin n is bit n of a selection
 /// (`GRKIT_HOST_PLUGINS`) and module n of the menu.
-pub const PLUGINS: [Plugin; 5] = [
+pub const PLUGINS: [Plugin; 6] = [
     Plugin {
         id: "image-control",
         points: &[Point::MenuPage, Point::Tuning, Point::PictureEncode],
@@ -296,6 +296,33 @@ pub const PLUGINS: [Plugin; 5] = [
         handlers: None,
         layers: &[],
         encoders: &[],
+    },
+    Plugin {
+        id: "diffusion",
+        points: &[Point::MenuPage, Point::PictureEncode],
+        needs_effects: false,
+        words: &[Word {
+            name: "level",
+            doc: "Diffusion level: 0 Off, 1 weak, 2 medium, 3 strong. The picture \
+                  encoder screens a blurred copy of the highlights of recorded \
+                  pictures back over the luma plane.",
+        }],
+        state: &[StateKey {
+            name: "level",
+            slot: Slot::Own(0),
+            max: 3,
+        }],
+        tiles: 4,
+        artwork: artwork::diffusion_tiles,
+        handlers: Some("diffusion.c"),
+        layers: &[],
+        // After selective color, before the date stamp, so the stamp keeps
+        // its crisp edges and its own color.
+        encoders: &[Encoder {
+            wanted: "diffusion_wanted",
+            encode: "diffusion_encode",
+            order: 15,
+        }],
     },
 ];
 
@@ -694,7 +721,7 @@ mod tests {
         let keys: Vec<_> = PLUGINS.iter().map(Plugin::key).collect();
         assert_eq!(
             keys,
-            ["imageControl", "framing", "guides", "dateStamp", "grain"]
+            ["imageControl", "framing", "guides", "dateStamp", "grain", "diffusion"]
         );
         assert_eq!(PLUGINS[3].c_name(), "DATE_STAMP");
         assert!(NAMES.iter().all(|name| name

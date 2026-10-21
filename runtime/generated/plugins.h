@@ -12,9 +12,10 @@
 #define PLUGIN_GUIDES 2U
 #define PLUGIN_DATE_STAMP 3U
 #define PLUGIN_GRAIN 4U
-#define PLUGIN_COUNT 5U
+#define PLUGIN_DIFFUSION 5U
+#define PLUGIN_COUNT 6U
 /* The PLUGINS.TXT names in plugin order. */
-#define PLUGIN_NAMES "image-control", "framing", "guides", "date-stamp", "grain"
+#define PLUGIN_NAMES "image-control", "framing", "guides", "date-stamp", "grain", "diffusion"
 /* The plugins that show only with effects. Without effects, the installer and
    the menu treat them as not installed. */
 #define PLUGIN_NEEDS_EFFECTS 0x1U
@@ -25,7 +26,8 @@
 #define GUIDES_TILES 6U
 #define DATE_STAMP_TILES 6U
 #define GRAIN_TILES 4U
-#define PLUGIN_TILES 20U
+#define DIFFUSION_TILES 4U
+#define PLUGIN_TILES 24U
 /* The largest value of each state key. The loader restores a larger value as
    0. */
 #define IMAGE_CONTROL_EFFECT_MAX 65535U
@@ -34,5 +36,6 @@
 #define DATE_STAMP_STYLE_MAX 5U
 #define DATE_STAMP_LOOK_MAX 2U
 #define GRAIN_LEVEL_MAX 3U
+#define DIFFUSION_LEVEL_MAX 3U
 
 #endif

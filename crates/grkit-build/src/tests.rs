@@ -468,13 +468,13 @@ fn synthetic_arm_hooks_match_fixed_target_contract() -> Result<()> {
         (
             &menu,
             0x540b6500,
-            0x540b9800u32,
+            0x540b9300u32,
             menu_hooks.as_slice(),
             menu_instructions.as_slice(),
         ),
         (
             &framing,
-            0x540b9800,
+            0x540b9300,
             0x540be000u32,
             framing_hooks.as_slice(),
             framing_instructions.as_slice(),
@@ -716,7 +716,7 @@ fn generated_header_matches_fixed_synthetic_contract() -> Result<()> {
     let header = loader::header(&plan, &synthetic_firmware(), TEST_VERSION)?;
     assert_eq!(
         sha256(header.as_bytes()),
-        "fcacd00a0fbbbbb3bd5ba7ed2e8d6455585bd847183f492875765ad515d83bc5"
+        "6b7a11ecdad892fb2295437c211dfdc5ff75518081f76f09e2d3cbc8641ce88f"
     );
     Ok(())
 }
@@ -797,7 +797,7 @@ fn generated_header_gives_the_points_of_each_patch() -> Result<()> {
     // Code in the tail belongs to no extension point. Image Control needs the
     // menu, tuning, and picture encode points (bits 0, 1, and 4).
     assert!(header.contains("static const u32 patch_points[] = {0x0};"));
-    assert!(header.contains("static const u32 plugin_points[] = {0x13,0xd,0x5,0x11,0x21};"));
+    assert!(header.contains("static const u32 plugin_points[] = {0x13,0xd,0x5,0x11,0x21,0x11};"));
     Ok(())
 }
 
@@ -832,7 +832,7 @@ fn production_scripts_and_activation_match_fixed_contracts() {
         ),
         (
             "SCRIPT/PLUGINS/PLUGINS.TTL",
-            "656ae5814a9336775c16f56b57e94d3a4f40c978145dfd7884a3f1d3a5e6c4e1",
+            "a1c1f958a069726205abe992ae392c2fb9313e554fec78bb91fa3554c6799c83",
         ),
         (
             "SCRIPT/PLUGINS/INSTALL.BIN",

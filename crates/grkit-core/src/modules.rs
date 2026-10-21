@@ -123,7 +123,7 @@ mod tests {
         assert!(Selection::parse(&[b' '; MAX_FILE_SIZE + 1]).is_err());
         assert_eq!(
             Selection::ALL.without("guides").unwrap().names(),
-            ["image-control", "framing", "date-stamp", "grain"]
+            ["image-control", "framing", "date-stamp", "grain", "diffusion"]
         );
     }
 

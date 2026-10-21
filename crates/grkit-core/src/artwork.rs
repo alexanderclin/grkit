@@ -618,6 +618,45 @@ pub fn grain_tiles() -> Vec<Vec<u8>> {
     tiles
 }
 
+/// A bright core with a soft halo of dots around it: the halo widens and
+/// brightens with `strength` (0..3).
+fn halo(rgba: &mut [u8], cx: usize, cy: usize, strength: u32) {
+    let radius = 3 + strength * 3;
+    for dy in -(radius as i32)..=(radius as i32) {
+        for dx in -(radius as i32)..=(radius as i32) {
+            let d2 = (dx * dx + dy * dy) as u32;
+            let r2 = radius * radius;
+            if d2 > r2 {
+                continue;
+            }
+            let alpha = if d2 <= 2 {
+                255
+            } else {
+                220 - (160 * d2 / r2.max(1)) as u8
+            };
+            let (x, y) = ((cx as i32 + dx) as usize, (cy as i32 + dy) as usize);
+            if x < 40 && y < 40 {
+                dot(rgba, x, y, alpha);
+            }
+        }
+    }
+}
+
+/// Diffusion artwork in runtime order: the module tile, then the weak,
+/// medium, and strong levels, with a wider halo at each level.
+pub fn diffusion_tiles() -> Vec<Vec<u8>> {
+    let mut module = background();
+    halo(&mut module, 20, 17, 2);
+    let mut tiles = vec![module];
+    for (label, strength) in [("Weak", 1u32), ("Med", 2), ("Strong", 3)] {
+        let mut rgba = background();
+        halo(&mut rgba, 20, 14, strength);
+        text(&mut rgba, label, 11.0, LABEL_WIDTH, 30.5, 255);
+        tiles.push(rgba);
+    }
+    tiles
+}
+
 /// The GRKit entry of the ADJ toolbar.
 pub fn plugins_pixels() -> Vec<u8> {
     let mut rgba = toolbar_background();

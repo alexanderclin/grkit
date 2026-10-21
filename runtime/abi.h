@@ -145,6 +145,10 @@
 /* Grain level: 0 Off, 1 weak, 2 medium, 3 strong. The native grain stage of
    recorded pictures uses it instead of the native grain settings. */
 #define GRKIT_PLUGIN_GRAIN_LEVEL 260
+/* Diffusion level: 0 Off, 1 weak, 2 medium, 3 strong. The picture encoder
+   screens a blurred copy of the highlights of recorded pictures back over the
+   luma plane. */
+#define GRKIT_PLUGIN_DIFFUSION_LEVEL 264
 
 /* An Image Control record. The records follow the header. */
 #define GRKIT_RECORD_SIZE 0x740
@@ -229,28 +233,32 @@
 #define TEXT_DATE_STYLE 4
 #define TEXT_DATE_LOOK 5
 #define TEXT_GRAIN 6
-#define TEXT_OFF 7
+#define TEXT_DIFFUSION 7
+#define TEXT_OFF 8
 /* Framing rows 1..3: XPan 65:24, 16:9, 4:3. */
-#define TEXT_RATIO 8
+#define TEXT_RATIO 9
 /* Guides rows 1..5: thirds, center, golden ratio, diagonals, thirds and
    center. */
-#define TEXT_GUIDE 11
+#define TEXT_GUIDE 12
 /* Date Stamp rows 1..5: the date styles. */
-#define TEXT_STAMP 16
+#define TEXT_STAMP 17
 /* Date Look values 0..2: classic, GR1s, GR II. */
-#define TEXT_LOOK 21
+#define TEXT_LOOK 22
 /* Grain rows 1..3: weak, medium, strong. */
-#define TEXT_GRAIN_LEVEL 24
-#define TEXT_IMAGE_OFF_SUMMARY 27
+#define TEXT_GRAIN_LEVEL 25
+/* Diffusion rows 1..3: weak, medium, strong. */
+#define TEXT_DIFFUSION_LEVEL 28
+#define TEXT_IMAGE_OFF_SUMMARY 31
 /* Summaries for each value, Off first. */
-#define TEXT_FRAMING_SUMMARY 28
-#define TEXT_GUIDES_SUMMARY 32
-#define TEXT_STAMP_SUMMARY 38
-#define TEXT_GRAIN_SUMMARY 44
+#define TEXT_FRAMING_SUMMARY 32
+#define TEXT_GUIDES_SUMMARY 36
+#define TEXT_STAMP_SUMMARY 42
+#define TEXT_GRAIN_SUMMARY 48
+#define TEXT_DIFFUSION_SUMMARY 52
 /* The Image Control summary before an effect name, for the installer. */
-#define TEXT_IMAGE_PREFIX 48
+#define TEXT_IMAGE_PREFIX 56
 /* The About row: the GRKit version. */
-#define TEXT_VERSION 49
-#define GRKIT_TEXT_STRINGS 50
+#define TEXT_VERSION 57
+#define GRKIT_TEXT_STRINGS 58
 
 #endif

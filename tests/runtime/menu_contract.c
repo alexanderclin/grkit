@@ -20,6 +20,8 @@ static unsigned test_language;
 #define STAMP_STYLE_ICON(style) (STAMP_ICON + (style))
 #define GRAIN_ICON (STAMP_ICON + DATE_STAMP_TILES)
 #define GRAIN_LEVEL_ICON(level) (GRAIN_ICON + (level))
+#define DIFFUSION_ICON (GRAIN_ICON + GRAIN_TILES)
+#define DIFFUSION_LEVEL_ICON(level) (DIFFUSION_ICON + (level))
 /* A page icon as its global ID. */
 #define PAGE_ICON(module, row) module_icon((module), modules[(module)].icon(test_header, (row)))
 #define CURRENT_ICON(row) module_icon(current_index(test_header), current_module(test_header)->icon(test_header, (row)))
@@ -228,9 +230,9 @@ int main(void)
     assert(exit_return(RETURN_OPENING | RETURN_ROOT, 0) == (RETURN_PARAMETERS | RETURN_ROOT));
     assert(exit_return(RETURN_PARAMETERS | RETURN_ROOT, 0) == 0);
     assert(RETURN_STATE(RETURN_PARAMETERS | RETURN_ROOT) == RETURN_PARAMETERS);
-    /* The root lists the five plugins, then About. */
+    /* The root lists the six plugins, then About. */
     test_header[GRKIT_HOST_MENU_LEVEL / 4] = 1;
-    assert(count(test_header) == 6);
+    assert(count(test_header) == 7);
     test_header[GRKIT_HOST_MENU_LEVEL / 4] = 2;
     assert(count(test_header) == 6);
     test_header[GRKIT_HOST_COUNT / 4] = 0;
@@ -245,7 +247,7 @@ int main(void)
     /* Guides tiles follow the Framing tiles. */
     assert(menu_icon(GUIDES_ICON) == 0x59007000 + FRAMING_TILES * GRKIT_ICON_STRIDE);
     assert(menu_icon(GUIDE_STYLE_ICON(5)) == 0x59007000 + 9 * GRKIT_ICON_STRIDE);
-    /* Module tiles fill 0x7fe9..0x7ffc; the Version tile (0x7ffd) and the
+    /* Module tiles fill 0x7fe5..0x7ffc; the Version tile (0x7ffd) and the
        GRKit tile (0x7ffe) follow them. */
     assert(menu_icon(PLUGIN_ICON - 1) == 0);
     assert(PLUGIN_ICON + PLUGIN_TILES == GRKIT_ICON_VERSION);
@@ -253,10 +255,13 @@ int main(void)
     /* Date Stamp tiles follow the Guides tiles. */
     assert(menu_icon(STAMP_ICON) == 0x59007000 + 10 * GRKIT_ICON_STRIDE);
     assert(menu_icon(STAMP_STYLE_ICON(5)) == 0x59007000 + 15 * GRKIT_ICON_STRIDE);
-    /* Grain tiles follow the Date Stamp tiles and end below the Version tile. */
+    /* Grain tiles follow the Date Stamp tiles. */
     assert(menu_icon(GRAIN_ICON) == 0x59007000 + 16 * GRKIT_ICON_STRIDE);
     assert(menu_icon(GRAIN_LEVEL_ICON(3)) == 0x59007000 + 19 * GRKIT_ICON_STRIDE);
-    assert(GRAIN_LEVEL_ICON(3) == 0x7ffc);
+    /* Diffusion tiles follow the Grain tiles and end below the Version tile. */
+    assert(menu_icon(DIFFUSION_ICON) == 0x59007000 + 20 * GRKIT_ICON_STRIDE);
+    assert(menu_icon(DIFFUSION_LEVEL_ICON(3)) == 0x59007000 + 23 * GRKIT_ICON_STRIDE);
+    assert(DIFFUSION_LEVEL_ICON(3) == 0x7ffc);
     test_header[GRKIT_HOST_MENU_LEVEL / 4] = MENU_ROOT;
     test_header[GRKIT_HOST_MENU_CURSOR / 4] = 1;
     assert(current_module(test_header) == &modules[1]);
@@ -505,15 +510,15 @@ int main(void)
     test_header[GRKIT_HOST_COUNT / 4] = 5;
     test_header[GRKIT_HOST_PREVIEW / 4] = 0;
     menu_start(test_header);
-    assert(count(test_header) == 6 && root_module(test_header, 5) == ABOUT_MODULE);
-    test_header[GRKIT_HOST_MENU_CURSOR / 4] = 5;
+    assert(count(test_header) == 7 && root_module(test_header, 6) == ABOUT_MODULE);
+    test_header[GRKIT_HOST_MENU_CURSOR / 4] = 6;
     assert(same(current_module(test_header)->summary(test_header), "Version 0.0.0"));
-    assert(PAGE_ICON(ABOUT_MODULE, 5) == GRKIT_ICON_VERSION);
+    assert(PAGE_ICON(ABOUT_MODULE, 6) == GRKIT_ICON_VERSION);
     {
         u32 active = test_header[GRKIT_HOST_ACTIVE / 4], requests = framing_requests;
         highlight(test_header);
         menu_confirm(test_header);
-        assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && test_header[GRKIT_HOST_MENU_CURSOR / 4] == 5);
+        assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && test_header[GRKIT_HOST_MENU_CURSOR / 4] == 6);
         assert(test_header[GRKIT_HOST_ACTIVE / 4] == active && framing_requests == requests);
         assert(test_header[GRKIT_HOST_PREVIEW / 4] == 0 && !parameters_row(test_header));
         assert(!menu_back(test_header));
@@ -529,7 +534,7 @@ int main(void)
     test_header[GRKIT_HOST_FRAME_RATIO / 4] = 0;
     test_header[GRKIT_HOST_PLUGINS / 4] = ALL_PLUGINS & ~(1U << PLUGIN_GUIDES);
     menu_start(test_header);
-    assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && test_header[GRKIT_HOST_MENU_CURSOR / 4] == 0 && count(test_header) == 5);
+    assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && test_header[GRKIT_HOST_MENU_CURSOR / 4] == 0 && count(test_header) == 6);
     assert(current_module(test_header) == &modules[0]);
     test_header[GRKIT_HOST_MENU_CURSOR / 4] = 2;
     assert(current_module(test_header) == &modules[PLUGIN_DATE_STAMP]);
@@ -549,12 +554,12 @@ int main(void)
     assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && test_header[GRKIT_HOST_MENU_CURSOR / 4] == 0);
     /* Image Control that is not installed does not show, even with effects. */
     test_header[GRKIT_HOST_PLUGINS / 4] = ALL_PLUGINS & ~(1U | 1U << PLUGIN_FRAMING);
-    assert(visible_modules(test_header) == (1U << PLUGIN_GUIDES | 1U << PLUGIN_DATE_STAMP | 1U << PLUGIN_GRAIN | 1U << ABOUT_MODULE));
+    assert(visible_modules(test_header) == (1U << PLUGIN_GUIDES | 1U << PLUGIN_DATE_STAMP | 1U << PLUGIN_GRAIN | 1U << PLUGIN_DIFFUSION | 1U << ABOUT_MODULE));
     /* Without effects, Image Control does not show. */
     test_header[GRKIT_HOST_PLUGINS / 4] = ALL_PLUGINS;
     test_header[GRKIT_HOST_COUNT / 4] = 0;
     menu_start(test_header);
-    assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && count(test_header) == 5);
+    assert(test_header[GRKIT_HOST_MENU_LEVEL / 4] == MENU_ROOT && count(test_header) == 6);
     assert(current_module(test_header) == &modules[PLUGIN_FRAMING]);
     test_header[GRKIT_HOST_MENU_CURSOR / 4] = 2;
     menu_confirm(test_header);

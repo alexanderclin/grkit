@@ -22,7 +22,7 @@ pub const TEXT_SETTINGS: usize = TEXT_PARAMETER_TITLE - 256;
 /// The units of the longest string with its NUL, and of each summary slot.
 pub const SUMMARY_UNITS: usize = 32;
 /// The number of strings in each language (`GRKIT_TEXT_STRINGS`).
-pub const STRINGS: usize = 50;
+pub const STRINGS: usize = 58;
 /// The longest effect name in a record.
 const NAME_UNITS: usize = 16;
 
@@ -47,6 +47,7 @@ struct Words {
     date_style: &'static str,
     date_look: &'static str,
     grain: &'static str,
+    diffusion: &'static str,
     /// Before the version in the About row.
     version: &'static str,
     off: &'static str,
@@ -57,6 +58,7 @@ struct Words {
     stamp_styles: [&'static str; 5],
     looks: [&'static str; 3],
     grain_levels: [&'static str; 3],
+    diffusion_levels: [&'static str; 3],
 }
 
 const ENGLISH: Words = Words {
@@ -68,6 +70,7 @@ const ENGLISH: Words = Words {
     date_style: "Date Style",
     date_look: "Date Look",
     grain: "Grain",
+    diffusion: "Diffusion",
     version: "Version",
     off: "Off",
     ratios: ["XPan 65:24", "16:9", "4:3"],
@@ -88,6 +91,7 @@ const ENGLISH: Words = Words {
     ],
     looks: ["Classic", "GR1s", "GR II"],
     grain_levels: ["Weak", "Medium", "Strong"],
+    diffusion_levels: ["Weak", "Medium", "Strong"],
 };
 
 const SIMPLIFIED_CHINESE: Words = Words {
@@ -99,6 +103,7 @@ const SIMPLIFIED_CHINESE: Words = Words {
     date_style: "日期样式",
     date_look: "日期字体",
     grain: "颗粒感",
+    diffusion: "柔光",
     version: "版本",
     off: "关闭",
     ratios: ["XPan 65:24", "16:9", "4:3"],
@@ -113,6 +118,7 @@ const SIMPLIFIED_CHINESE: Words = Words {
     ],
     looks: ["经典", "GR1s", "GR II"],
     grain_levels: ["弱", "中", "强"],
+    diffusion_levels: ["弱", "中", "强"],
 };
 
 const TRADITIONAL_CHINESE: Words = Words {
@@ -124,6 +130,7 @@ const TRADITIONAL_CHINESE: Words = Words {
     date_style: "日期樣式",
     date_look: "日期字體",
     grain: "粒紋感",
+    diffusion: "柔光",
     version: "版本",
     off: "關閉",
     ratios: ["XPan 65:24", "16:9", "4:3"],
@@ -138,6 +145,7 @@ const TRADITIONAL_CHINESE: Words = Words {
     ],
     looks: ["經典", "GR1s", "GR II"],
     grain_levels: ["弱", "中", "強"],
+    diffusion_levels: ["弱", "中", "強"],
 };
 
 const JAPANESE: Words = Words {
@@ -151,6 +159,7 @@ const JAPANESE: Words = Words {
     date_style: "日付のスタイル",
     date_look: "日付の書体",
     grain: "粒状感",
+    diffusion: "ディフュージョン",
     version: "バージョン",
     off: "オフ",
     ratios: ["XPan 65:24", "16:9", "4:3"],
@@ -165,6 +174,7 @@ const JAPANESE: Words = Words {
     ],
     looks: ["クラシック", "GR1s", "GR II"],
     grain_levels: ["弱", "中", "強"],
+    diffusion_levels: ["弱", "中", "強"],
 };
 
 fn words(language: Language) -> &'static Words {
@@ -197,6 +207,7 @@ pub const RUNS: &[Run] = &[
     run("DATE_STYLE", 1, ""),
     run("DATE_LOOK", 1, ""),
     run("GRAIN", 1, ""),
+    run("DIFFUSION", 1, ""),
     run("OFF", 1, ""),
     run("RATIO", 3, "Framing rows 1..3: XPan 65:24, 16:9, 4:3."),
     run(
@@ -207,11 +218,17 @@ pub const RUNS: &[Run] = &[
     run("STAMP", 5, "Date Stamp rows 1..5: the date styles."),
     run("LOOK", 3, "Date Look values 0..2: classic, GR1s, GR II."),
     run("GRAIN_LEVEL", 3, "Grain rows 1..3: weak, medium, strong."),
+    run(
+        "DIFFUSION_LEVEL",
+        3,
+        "Diffusion rows 1..3: weak, medium, strong.",
+    ),
     run("IMAGE_OFF_SUMMARY", 1, ""),
     run("FRAMING_SUMMARY", 4, "Summaries for each value, Off first."),
     run("GUIDES_SUMMARY", 6, ""),
     run("STAMP_SUMMARY", 6, ""),
     run("GRAIN_SUMMARY", 4, ""),
+    run("DIFFUSION_SUMMARY", 4, ""),
     run(
         "IMAGE_PREFIX",
         1,
@@ -255,17 +272,20 @@ fn run_strings(w: &Words, name: &str, version: &str) -> Vec<String> {
         "DATE_STYLE" => words(&[w.date_style]),
         "DATE_LOOK" => words(&[w.date_look]),
         "GRAIN" => words(&[w.grain]),
+        "DIFFUSION" => words(&[w.diffusion]),
         "OFF" => words(&[w.off]),
         "RATIO" => words(&w.ratios),
         "GUIDE" => words(&w.guide_styles),
         "STAMP" => words(&w.stamp_styles),
         "LOOK" => words(&w.looks),
         "GRAIN_LEVEL" => words(&w.grain_levels),
+        "DIFFUSION_LEVEL" => words(&w.diffusion_levels),
         "IMAGE_OFF_SUMMARY" => vec![summary(w.image_control, w.off)],
         "FRAMING_SUMMARY" => summaries(w.framing, &w.ratio_values),
         "GUIDES_SUMMARY" => summaries(w.guides, &w.guide_styles),
         "STAMP_SUMMARY" => summaries(w.date_stamp, &w.stamp_styles),
         "GRAIN_SUMMARY" => summaries(w.grain, &w.grain_levels),
+        "DIFFUSION_SUMMARY" => summaries(w.diffusion, &w.diffusion_levels),
         "IMAGE_PREFIX" => vec![format!("{}{}", w.image_control, w.separator)],
         "VERSION" => vec![format!("{} {version}", w.version)],
         _ => unreachable!("Unknown menu text run {name}"),

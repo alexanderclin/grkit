@@ -434,11 +434,11 @@ fn runtime_layout_matches_target_capacity() {
     assert_eq!(runtime::MAX_COUNT, 20);
     assert_eq!(
         runtime::layout(0).unwrap(),
-        json!({"words": 39586, "icon_words": [36846]})
+        json!({"words": 39586, "icon_words": [43254]})
     );
     assert_eq!(
         runtime::layout(20).unwrap(),
-        json!({"words": 48866, "icon_words": [64080, 4806]})
+        json!({"words": 48866, "icon_words": [64080, 11214]})
     );
     assert!(runtime::layout(21).is_err());
 }
@@ -462,17 +462,17 @@ fn allocation_includes_host_icons_at_chunk_boundaries() {
         );
         assert_eq!(
             icons.iter().sum::<usize>() * 4,
-            (count + 23) * 6408,
+            (count + 27) * 6408,
             "count {count}"
         );
         assert!(std::iter::once(&words)
             .chain(&icons)
             .all(|v| (1..=65536).contains(v)));
-        // The 23 host icons come first, so effects after the seventeenth
+        // The 27 host icons come first, so effects after the thirteenth
         // continue in a second 40-icon chunk.
         assert_eq!(
             icons.len(),
-            if count <= 17 { 1 } else { 2 },
+            if count <= 13 { 1 } else { 2 },
             "count {count}"
         );
     }

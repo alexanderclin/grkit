@@ -7,9 +7,11 @@
 
 #include "../plugins/image-control/selective.c"
 #include "../plugins/date-stamp/stamp.c"
+#include "../plugins/diffusion/diffusion.c"
 
 #define PLUGIN_ENCODERS \
     {PLUGIN_IMAGE_CONTROL,selective_wanted,selective_encode}, \
+    {PLUGIN_DIFFUSION,diffusion_wanted,diffusion_encode}, \
     {PLUGIN_DATE_STAMP,stamp_wanted,stamp_encode},
 
 #endif

@@ -310,8 +310,11 @@ pub const GR3_LAYOUT: Layout = Layout {
     tail: (TAIL_BASE, TAIL_END),
     processing: Some((0x540b6100, 0x540b6500)),
     processing_source: include_str!("../../../runtime/processing.S"),
-    menu: (0x540b6500, 0x540b9800),
-    framing: Some((0x540b9800, TAIL_END)),
+    // The menu/framing boundary sits 2 KB lower than upstream: the Diffusion
+    // picture encoder needs the room in the framing component, and the menu
+    // component keeps enough headroom for its pages.
+    menu: (0x540b6500, 0x540b9300),
+    framing: Some((0x540b9300, TAIL_END)),
     contexts: CONTEXTS,
     processing_hooks: PROCESSING_HOOKS,
     menu_hooks: MENU_HOOKS,

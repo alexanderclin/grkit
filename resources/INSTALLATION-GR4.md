@@ -26,6 +26,7 @@ Open ADJ and select the sixth entry, GRK. GRKit loads a few seconds after power-
 - **Guides:** select a guide style. The lines show only in the viewfinder.
 - **Date Imprint:** press OK to open its settings. In **Date Style**, select a date style. In **Date Look**, select the digits: Classic, GR1s, or GR II. Photos get the date at the bottom right.
 - **Grain:** select Weak, Medium, or Strong. Only photos get the grain.
+- **Diffusion:** select Weak, Medium, or Strong. Photos get a soft diffusion glow over their highlights, like a mist filter. Only photos are affected, and the live view does not preview it.
 
 Highlight the last row, GRK, to see the GRKit version.
 

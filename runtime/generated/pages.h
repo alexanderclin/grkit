@@ -10,7 +10,8 @@
 #include "../plugins/guides/page.h"
 #include "../plugins/date-stamp/page.h"
 #include "../plugins/grain/page.h"
+#include "../plugins/diffusion/page.h"
 
-#define PLUGIN_PAGES IMAGE_CONTROL_PAGE, FRAMING_PAGE, GUIDES_PAGE, DATE_STAMP_PAGE, GRAIN_PAGE
+#define PLUGIN_PAGES IMAGE_CONTROL_PAGE, FRAMING_PAGE, GUIDES_PAGE, DATE_STAMP_PAGE, GRAIN_PAGE, DIFFUSION_PAGE
 
 #endif
